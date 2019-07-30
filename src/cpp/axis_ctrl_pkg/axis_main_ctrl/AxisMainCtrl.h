@@ -23,6 +23,8 @@ class AxisMainCtrl : public AxisMainCtrlBase
         virtual ~AxisMainCtrl();
         //XXX add your public methods here
 	float gfloat_one_rpm_increments;
+	bool gbool_position_max;
+	bool gbool_position_min;
 
     protected:
 
