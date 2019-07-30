@@ -102,6 +102,8 @@ bool AxisMainCtrl::safety() //safety function
 	       || servo_motor_control.value.stop == true)
                || hmi_input_port.switch_limit_min == true
 	       || hmi_input_port.switch_limit_max == true {
+	if (servo_motor_state.value.position_absolute == position_max){gbool_position_max =true;}
+	else if (servo_motor_state.value.position_absolute == position_min){gbool_position_min =true;}
         stop();
       }  
       else {return true;} //safety
@@ -119,20 +121,25 @@ void AxisMainCtrl::homing()
 }
 void AxisMainCtrl::manual()
 {
-    state_reset();
     axis_control_port.target_velocity = servo_motor_control.value.speed * gfloat_one_rpm_increments;
+    if ((gbool_position_min || hmi_input_port.switch_home || hmi_input_port.switch_limit_min)&&axis_control_port.target_velocity<0){stop();return ;}
+    else if ((gbool_position_max || hmi_input_port.switch_limit_max)&&axis_control_port.target_velocity>0){stop();return ;}
+    state_reset();
     state_msg("moving");
 }	
 
 bool AxisMainCtrl::move_to_position(int position_goal)
 {
-    state_reset();
     int position_offset = position_goal - servo_motor_state.value.position_absolute;
     if (position_offset == 0){
+      state_reset();
       stop();
       return true;
     }
     else{
+      if ((gbool_position_min || hmi_input_port.switch_home || hmi_input_port.switch_limit_min)&&axis_control_port.target_velocity<0){stop();return ;}
+      else if ((gbool_position_max || hmi_input_port.switch_limit_max)&&axis_control_port.target_velocity>0){stop();return ;}
+ 
       axis_control_port.target_velocity = abs(servo_motor_control.value.speed) * gfloat_one_rpm_increments;
       if (position_offset < 0){axis_control_port.target_velocity *= -1;}     
 
@@ -143,7 +150,8 @@ bool AxisMainCtrl::move_to_position(int position_goal)
           axis_control_port.target_velocity /= 3;
       }
       if (abs(servo_motor_state.value.home_offset) <= 10) {axis_control_port.target_velocity = 1;}
-
+	    
+      state_reset();
       state_msg("moving");
       return false;
     }
@@ -166,6 +174,8 @@ void AxisMainCtrl::state_reset()
     servo_motor_state.value.home_in_progress=false;
     servo_motor_state.value.homed=false;
     hmi_output_port.pilot_led = false;
+    gbool_position_min = false; 	 
+    gbool_position_max = false; 
 }
 
 void AxisMainCtrl::state_msg(std::string msg)
