@@ -12,9 +12,9 @@ make
     
 gds install
 sed -i 's,tcp://127.0.0.1:8000,,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee  # fix https://github.com/GMTO/gmt_issues/issues/135
-sed -i 's,async,sync,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
-sed -i 's,pub,push,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
-sed -i 's,sub,pull,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
+sed -i 's,async,sync,g' $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_default_conf.coffee
+sed -i 's,pub,push,g' $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_default_conf.coffee
+sed -i 's,sub,pull,g' $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_default_conf.coffee
 
 for i in $(ls $GMT_LOCAL_ETC/conf/axis_dcs/ | grep coffee | grep -v ethercat | cut -f1-3 -d_); do grs compile $i; done
 grs compile --input $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_ethercat_default_conf.coffee --output $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_ethercat_default_conf.cfg
