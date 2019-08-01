@@ -23,9 +23,6 @@ class AxisMainCtrl : public AxisMainCtrlBase
         virtual ~AxisMainCtrl();
         //XXX add your public methods here
 	float gfloat_one_rpm_increments;
-	bool gbool_position_max;
-	bool gbool_position_min;
-
     protected:
 
         virtual void step() override;
@@ -39,7 +36,8 @@ class AxisMainCtrl : public AxisMainCtrlBase
         virtual void state_msg(std::string msg);
 
 	virtual bool move_to_position(int position_goal);
-	virtual bool safety(void);
+	virtual bool safety_state();
+	virtual void safety_command();
 	virtual bool timer_start(int timeout);
 	//XXX add your protected class members here
 
