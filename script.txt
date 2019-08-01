@@ -1,0 +1,20 @@
+// script for ocs_axis_dcs
+// you need to change the "owner type" of "sdo_read_update_done" in "$GMT_LOACL/etc/conf/axis_dcs/axis_hw1_adapter_default_conf.coffee"
+
+cd $GMT_LOCAL/modules/ocs_axis_dcs/model
+rm -fr $GMT_LOCAL/etc/conf/axis_dcs/
+webpack && gds gen axis_dcs && gds install axis_dcs
+
+cd $GMT_LOCAL/modules/ocs_axis_dcs/src/cpp
+sed -i 's/# MO/MO/g' */module.mk
+make clean && rm $GMT_LOCAL_BIN/*
+make
+    
+gds install
+sed -i 's,tcp://127.0.0.1:8000,,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee  # fix https://github.com/GMTO/gmt_issues/issues/135
+sed -i 's,async,sync,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
+sed -i 's,pub,push,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
+sed -i 's,sub,pull,g' $GMT_LOCAL_ETC/conf/axis_dcs/*coffee
+
+for i in $(ls $GMT_LOCAL_ETC/conf/axis_dcs/ | grep coffee | grep -v ethercat | cut -f1-3 -d_); do grs compile $i; done
+grs compile --input $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_ethercat_default_conf.coffee --output $GMT_LOCAL_ETC/conf/axis_dcs/axis_hw1_adapter_ethercat_default_conf.cfg
