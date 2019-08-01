@@ -47,8 +47,8 @@ void AxisMainCtrl::step()
     servo_motor_state.value.position_absolute = -(servo_motor_state.value.home_offset);
 
 
-    // motor home initializing 
-    if (!servo_motor_state.value.home_init){ 
+    // motor home initializing
+    if (!servo_motor_state.value.home_init){
       axis_control_port.target_velocity = -120 * gfloat_one_rpm_increments; //move to CCW to find the home switch
       state_msg("home init");
       if(timer_start(20)){ // home init timer
@@ -68,14 +68,14 @@ void AxisMainCtrl::step()
 
     // motor control
     else{
-      switch (servo_motor_control.value.mode){ //select mode  
+      switch (servo_motor_control.value.mode){ //select mode
         case 0: {stop();break;}                                                 //stop and wait
    	case 1: {homing(); break;}                                              //homing
         case 2: {move_to_position(servo_motor_control.value.position); break;}  //move to position
         case 3: {manual(); break;}                                              //move with velocity
       }
       safety_command(); // check safety of motor command
-    }    
+    }
 }
 
 void AxisMainCtrl::stop() //stop the motor and change the mode to 0
@@ -84,7 +84,7 @@ void AxisMainCtrl::stop() //stop the motor and change the mode to 0
     servo_motor_control.value.stop = true;
     axis_control_port.target_velocity = 0;
     state_msg("stop");
-}	
+}
 
 
 bool AxisMainCtrl::safety_state() //safety state function
@@ -97,15 +97,14 @@ bool AxisMainCtrl::safety_state() //safety state function
       else if (servo_motor_state.value.position_absolute < position_min-20){ //20 is oscillation offset
 	stop();
 	state_msg("limit_min");
-        move_to_position(position_min);	
+        move_to_position(position_min);
       }
-      else if ((((servo_motor_state.value.position_absolute==position_max || servo_motor_state.value.position_absolute==position_min) && axis_control_port.target_velocity != 0)
-	       || servo_motor_control.value.stop == true)
+      else if (servo_motor_control.value.stop == true
                || hmi_input_port.switch_limit_min == true
 	       || hmi_input_port.switch_limit_max == true
 	       || hmi_input_port.switch_home == true) {
         stop();
-      }  
+      }
       else {return true;} //safety
       return false; //unsafety
 }
@@ -113,10 +112,10 @@ bool AxisMainCtrl::safety_state() //safety state function
 void AxisMainCtrl::safety_command() //prevent to over the limits by current commands
 {
     int offset_min = abs(servo_motor_state.value.position_absolute - position_min);
-    int offset_max = abs(servo_motor_state.value.position_absolute - position_max);  
+    int offset_max = abs(servo_motor_state.value.position_absolute - position_max);
     if (axis_control_port.target_velocity < 0  && abs(axis_control_port.target_velocity) >= offset_min){
       move_to_position(position_min);
-    } 
+    }
     if (axis_control_port.target_velocity > 0 && abs(axis_control_port.target_velocity) >= offset_max){
     move_to_position(position_max);
     }
@@ -127,7 +126,7 @@ void AxisMainCtrl::manual() //velocity mode
     axis_control_port.target_velocity = servo_motor_control.value.speed * gfloat_one_rpm_increments;
     state_reset();
     state_msg("moving");
-}	
+}
 
 bool AxisMainCtrl::move_to_position(int position_goal)
 {
@@ -141,7 +140,7 @@ bool AxisMainCtrl::move_to_position(int position_goal)
       axis_control_port.target_velocity = abs(servo_motor_control.value.speed) * gfloat_one_rpm_increments;
       if (position_offset < 0){axis_control_port.target_velocity *= -1;} // velocity sign
 
-      while (abs(position_offset) < abs(axis_control_port.target_velocity) && abs(position_offset) >10 ){ //slow down 
+      while (abs(position_offset) < abs(axis_control_port.target_velocity) && abs(position_offset) >10 ){ //slow down
           axis_control_port.target_velocity /= 3;
       }
       if (abs(position_offset) <= 10) {axis_control_port.target_velocity = 1;} //slow down
@@ -150,7 +149,7 @@ bool AxisMainCtrl::move_to_position(int position_goal)
       state_msg("moving");
       return false;
     }
-}	
+}
 
 void AxisMainCtrl::homing()
 {
